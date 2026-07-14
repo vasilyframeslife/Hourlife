@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Час жизни — сколько стоит твоё время</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='44' fill='%2307100b' stroke='%23e8b364' stroke-width='6'/%3E%3Cline x1='50' y1='50' x2='50' y2='24' stroke='%23e8b364' stroke-width='6' stroke-linecap='round'/%3E%3Cline x1='50' y1='50' x2='68' y2='58' stroke='%23e8b364' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;1,9..144,450&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-black:#000000;
+    --bg-panel:#0f2118;
+    --bg-panel2:#081911;
+    --lamp:#e8b364;
+    --paper:#f2f0e6;
+    --sage:#8f9990;
+    --sage-dim:#586158;
+    --line:#1f3327;
+    --line-bright:#33503e;
+    --bill-green:#1c3524;
+    --bill-green-light:#254a30;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html,body{
+    background:var(--bg-black);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  /* ---------- Background: floating money/digits/phrases field ---------- */
+  .money-field{
+    position:fixed;
+    left:0;
+    top:-15vh;
+    width:100vw;
+    height:135vh;
+    z-index:0;
+    pointer-events:none;
+    overflow:hidden;
+  }
+
+  .glyph{
+    position:absolute;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:500;
+    white-space:nowrap;
+    opacity:0;
+    animation-name:glyphOrbit, glyphBlink;
+    animation-timing-function:linear, ease-in-out;
+    animation-iteration-count:infinite, infinite;
+  }
+
+  .glyph.phrase{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:450;
+    letter-spacing:0.01em;
+  }
+
+  @keyframes glyphOrbit{
+    0%{ transform:translate(var(--rx), 0); }
+    12.5%{ transform:translate(calc(var(--rx) * 0.707), calc(var(--ry) * 0.707)); }
+    25%{ transform:translate(0, var(--ry)); }
+    37.5%{ transform:translate(calc(var(--rx) * -0.707), calc(var(--ry) * 0.707)); }
+    50%{ transform:translate(calc(var(--rx) * -1), 0); }
+    62.5%{ transform:translate(calc(var(--rx) * -0.707), calc(var(--ry) * -0.707)); }
+    75%{ transform:translate(0, calc(var(--ry) * -1)); }
+    87.5%{ transform:translate(calc(var(--rx) * 0.707), calc(var(--ry) * -0.707)); }
+    100%{ transform:translate(var(--rx), 0); }
+  }
+
+  @keyframes glyphBlink{
+    0%, 100%{ opacity:0; }
+    35%{ opacity:0; }
+    50%{ opacity:var(--peak, 0.35); }
+    65%{ opacity:0; }
+  }
+
+  .vignette{
+    position:fixed;
+    inset:0;
+    background:radial-gradient(ellipse 85% 75% at 50% 20%, transparent 58%, rgba(0,0,0,0.45) 100%);
+    pointer-events:none;
+    z-index:1;
+  }
+
+  .grain{
+    position:fixed;
+    inset:0;
+    opacity:0.045;
+    pointer-events:none;
+    z-index:2;
+    mix-blend-mode:overlay;
+  }
+
+  .scene{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:0 24px 170px;
+    isolation:isolate;
+  }
+
+  header{
+    position:relative;
+    z-index:3;
+    text-align:center;
+    padding-top:88px;
+    max-width:640px;
+  }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.32em;
+    text-transform:uppercase;
+    color:var(--lamp);
+    opacity:0.85;
+    margin-bottom:22px;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:450;
+    font-size:clamp(34px, 6vw, 58px);
+    line-height:1.08;
+    letter-spacing:-0.01em;
+    color:var(--paper);
+  }
+
+  h1 em{
+    font-style:italic;
+    font-weight:450;
+    color:var(--lamp);
+  }
+
+  .sub{
+    margin-top:20px;
+    font-size:16px;
+    line-height:1.6;
+    color:var(--sage);
+    max-width:480px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+
+  /* ---------- Panels (shared) ---------- */
+  .panel{
+    position:relative;
+    z-index:3;
+    margin-top:56px;
+    width:100%;
+    max-width:420px;
+    background:linear-gradient(180deg, var(--bg-panel) 0%, rgba(15,33,24,0.7) 100%);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:36px 32px;
+    box-shadow:0 26px 52px -26px rgba(0,0,0,0.5);
+  }
+
+  .panel.dark{
+    background:linear-gradient(180deg, var(--bg-panel2) 0%, rgba(6,20,13,0.75) 100%);
+    border-color:#152920;
+  }
+
+  .panel-heading{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:19px;
+    color:var(--paper);
+    margin-bottom:26px;
+  }
+
+  .panel-heading .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-style:normal;
+    font-size:11px;
+    letter-spacing:0.14em;
+    color:var(--lamp);
+    display:block;
+    margin-bottom:6px;
+  }
+
+  .field{ margin-bottom:26px; }
+  .field:last-child{ margin-bottom:0; }
+
+  label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--sage);
+    margin-bottom:10px;
+  }
+
+  .input-row{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    border-bottom:1px solid var(--line-bright);
+    padding-bottom:10px;
+    transition:border-color 0.25s ease;
+  }
+
+  .input-row:focus-within{ border-color:var(--lamp); }
+
+  .input-row input{
+    flex:1;
+    width:100%;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:22px;
+    font-weight:500;
+    letter-spacing:0.01em;
+  }
+
+  .input-row input::placeholder{ color:var(--sage-dim); }
+
+  .unit{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--sage-dim);
+    white-space:nowrap;
+  }
+
+  /* ---------- Mode dropdown (money style) ---------- */
+  .mode-field{ position:relative; }
+
+  .mode-trigger{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--line-bright);
+    padding-bottom:10px;
+    cursor:pointer;
+    color:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+    font-weight:500;
+  }
+
+  .mode-trigger:hover{ border-color:var(--lamp); }
+
+  .mode-trigger .chev{
+    width:10px; height:10px;
+    border-right:1.5px solid var(--lamp);
+    border-bottom:1.5px solid var(--lamp);
+    transform:rotate(45deg);
+    transition:transform 0.25s ease;
+    flex-shrink:0;
+  }
+
+  .mode-trigger.open .chev{ transform:rotate(225deg); }
+
+  .mode-menu{
+    list-style:none;
+    position:absolute;
+    top:calc(100% + 10px);
+    left:0;
+    right:0;
+    z-index:20;
+    display:none;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .mode-menu.open{ display:flex; }
+
+  .bill{
+    position:relative;
+    padding:14px 16px;
+    background:linear-gradient(135deg, var(--bill-green-light) 0%, var(--bill-green) 100%);
+    border:1px solid #365940;
+    border-radius:3px;
+    color:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.03em;
+    cursor:pointer;
+    overflow:hidden;
+    opacity:0;
+    transform:translateY(-16px) rotate(-4deg);
+    animation:billFall 0.45s cubic-bezier(.22,1.1,.4,1) forwards;
+    animation-delay:calc(var(--i) * 60ms);
+    box-shadow:0 10px 24px -10px rgba(0,0,0,0.6);
+  }
+
+  .bill::before{
+    content:"₽";
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    font-family:'Fraunces', serif;
+    font-size:34px;
+    font-style:italic;
+    opacity:0.14;
+  }
+
+  .bill::after{
+    content:"";
+    position:absolute;
+    inset:4px;
+    border:1px dashed rgba(242,240,230,0.15);
+    border-radius:2px;
+    pointer-events:none;
+  }
+
+  .bill:hover{ background:linear-gradient(135deg, #2a5236 0%, #1c3524 100%); }
+
+  @keyframes billFall{
+    0%{ opacity:0; transform:translateY(-16px) rotate(-4deg); }
+    60%{ opacity:1; transform:translateY(2px) rotate(1deg); }
+    100%{ opacity:1; transform:translateY(0) rotate(0deg); }
+  }
+
+  /* ---------- Schedule sub-fields with crumple transition ---------- */
+  .schedule-fields{
+    display:flex;
+    flex-direction:column;
+    gap:26px;
+    margin-top:26px;
+    transform-origin:top center;
+  }
+
+  .schedule-fields.crumple-out{ animation:crumpleOut 0.2s ease forwards; }
+  .schedule-fields.crumple-in{ animation:crumpleIn 0.28s cubic-bezier(.2,.8,.3,1) forwards; }
+
+  @keyframes crumpleOut{
+    0%{ opacity:1; transform:scaleY(1) scaleX(1); }
+    100%{ opacity:0; transform:scaleY(0.75) scaleX(0.92); }
+  }
+
+  @keyframes crumpleIn{
+    0%{ opacity:0; transform:scaleY(0.75) scaleX(0.92); }
+    50%{ opacity:1; transform:scaleY(1.03) scaleX(1.01); }
+    100%{ opacity:1; transform:scaleY(1) scaleX(1); }
+  }
+
+  .sched-group{ display:flex; gap:16px; }
+  .sched-group .field{ flex:1; margin-bottom:0; }
+  .hidden{ display:none !important; }
+
+  .calc-btn{
+    width:100%;
+    margin-top:32px;
+    padding:16px;
+    background:var(--lamp);
+    color:#000000;
+    border:none;
+    border-radius:2px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    font-weight:600;
+    cursor:pointer;
+    transition:transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .calc-btn:hover{
+    background:#f1c383;
+    box-shadow:0 8px 30px -6px rgba(232,179,100,0.5);
+  }
+
+  .calc-btn:active{ transform:scale(0.98); }
+
+  /* ---------- Receipt (rate) ---------- */
+  .receipt-wrap{
+    position:relative;
+    z-index:3;
+    width:100%;
+    max-width:380px;
+    margin-top:44px;
+    display:none;
+  }
+
+  .receipt-wrap.show{
+    display:block;
+    animation:dropIn 0.55s cubic-bezier(.2,.8,.2,1);
+  }
+
+  @keyframes dropIn{
+    from{ opacity:0; transform:translateY(-18px) scale(0.98); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  .receipt{
+    background:var(--paper);
+    color:#1a1f19;
+    padding:38px 28px 30px;
+    position:relative;
+    box-shadow:0 34px 62px -26px rgba(0,0,0,0.6);
+    clip-path:polygon(
+      0% 3%, 3% 0%, 8% 3%, 13% 0%, 18% 3%, 23% 0%, 28% 3%, 33% 0%, 38% 3%, 43% 0%,
+      48% 3%, 53% 0%, 58% 3%, 63% 0%, 68% 3%, 73% 0%, 78% 3%, 83% 0%, 88% 3%, 93% 0%, 98% 3%, 100% 0%,
+      100% 100%, 0% 100%
+    );
+  }
+
+  .receipt::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    opacity:0.05;
+    pointer-events:none;
+    background-image:repeating-linear-gradient(0deg, #000 0 1px, transparent 1px 3px);
+  }
+
+  .r-eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    text-align:center;
+    color:#5a6355;
+    margin-bottom:6px;
+  }
+
+  .r-title{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:20px;
+    text-align:center;
+    color:#1a1f19;
+    margin-bottom:22px;
+  }
+
+  .r-divider{
+    border:none;
+    border-top:1px dashed #b8bcae;
+    margin:18px 0;
+  }
+
+  .r-rate{ text-align:center; }
+
+  .r-rate .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#5a6355;
+  }
+
+  .r-rate .value{
+    font-family:'Fraunces', serif;
+    font-size:40px;
+    font-weight:600;
+    color:#16241c;
+    margin-top:6px;
+    line-height:1;
+  }
+
+  .r-rate .value span{
+    font-size:18px;
+    font-weight:400;
+    color:#5a6355;
+  }
+
+  .r-footer{
+    margin-top:22px;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:#8b9186;
+  }
+
+  .barcode{
+    margin:20px auto 0;
+    width:70%;
+    height:28px;
+    background:repeating-linear-gradient(90deg, #1a1f19 0 2px, transparent 2px 3px, #1a1f19 5px 6px, transparent 6px 9px, #1a1f19 9px 10px, transparent 10px 14px);
+    opacity:0.85;
+  }
+
+  .actions{ display:flex; gap:12px; margin-top:24px; }
+
+  .actions button{
+    flex:1;
+    padding:13px;
+    background:transparent;
+    border:1px solid var(--line-bright);
+    color:var(--sage);
+    border-radius:2px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:all 0.2s ease;
+  }
+
+  .actions button:hover{ border-color:var(--lamp); color:var(--lamp); }
+
+  .actions button:disabled{
+    opacity:0.35;
+    cursor:not-allowed;
+  }
+
+  /* ---------- Purchase bag result ---------- */
+  .bag-wrap{
+    position:relative;
+    z-index:3;
+    width:100%;
+    max-width:380px;
+    margin-top:44px;
+    display:none;
+  }
+
+  .bag-wrap.show{
+    display:block;
+    animation:dropIn 0.55s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .bag{
+    position:relative;
+    background:var(--paper);
+    color:#1a1f19;
+    padding:44px 28px 30px;
+    border-radius:6px 6px 34px 34px;
+    box-shadow:0 34px 62px -26px rgba(0,0,0,0.6);
+  }
+
+  .handle{
+    position:absolute;
+    top:-24px;
+    width:64px;
+    height:42px;
+    border:7px solid var(--paper);
+    border-bottom:none;
+    border-radius:50px 50px 0 0;
+  }
+
+  .handle.left{ left:38px; transform:rotate(-7deg); }
+  .handle.right{ right:38px; transform:rotate(7deg); }
+
+  .bag-eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    text-align:center;
+    color:#5a6355;
+    margin-bottom:10px;
+  }
+
+  .bag-amount{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:30px;
+    text-align:center;
+    color:#16241c;
+    margin-bottom:22px;
+  }
+
+  .bag-stats{ display:flex; flex-direction:column; gap:14px; }
+
+  .stat-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px dashed #c7cbbc;
+    padding-bottom:12px;
+  }
+
+  .stat-row .stat-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#5a6355;
+  }
+
+  .stat-row .stat-value{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    color:#16241c;
+    text-align:right;
+  }
+
+  .stat-row .stat-value small{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:#5a6355;
+    display:block;
+    font-style:normal;
+  }
+
+  .stat-row.extra{
+    border-bottom-style:solid;
+    border-bottom-color:#c7cbbc;
+  }
+
+  .stat-row.extra .stat-label{ color:#7a8a4f; }
+
+  .life-compare{
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px dashed #b8bcae;
+  }
+
+  .life-compare-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#5a6355;
+    margin-bottom:10px;
+  }
+
+  .life-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  .life-chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:#2a3327;
+    background:rgba(22,36,28,0.06);
+    border:1px dashed #b8bcae;
+    border-radius:20px;
+    padding:5px 12px;
+    opacity:0;
+    animation:chipIn 0.4s ease forwards;
+  }
+
+  @keyframes chipIn{
+    from{ opacity:0; transform:translateY(4px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .rhetoric-line{
+    margin-top:18px;
+    text-align:center;
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:13px;
+    color:#6b7566;
+    line-height:1.5;
+  }
+
+  .receipt-no, .bag-no{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9.5px;
+    letter-spacing:0.08em;
+    color:#8b9186;
+    text-align:center;
+    margin-bottom:8px;
+  }
+
+  .bag-tag{
+    margin-top:22px;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:#8b9186;
+  }
+
+  /* ---------- Micro-animations ---------- */
+  @keyframes breathIn{
+    0%{ transform:scale(0.98); }
+    55%{ transform:scale(1.012); }
+    100%{ transform:scale(1); }
+  }
+
+  .bag.breathe, .receipt.breathe{
+    animation:breathIn 0.5s cubic-bezier(.2,.7,.3,1);
+  }
+
+  @keyframes amountFlash{
+    0%{ opacity:0.5; transform:scale(1.06); text-shadow:0 0 14px rgba(22,36,28,0.25); }
+    100%{ opacity:1; transform:scale(1); text-shadow:none; }
+  }
+
+  .r-rate .value.flash, .bag-amount.flash{
+    animation:amountFlash 0.6s cubic-bezier(.2,.7,.3,1);
+  }
+
+  .bag-amount{
+    cursor:pointer;
+  }
+
+  footer{
+    position:relative;
+    z-index:3;
+    margin-top:auto;
+    padding-top:70px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--sage-dim);
+    text-align:center;
+  }
+
+  /* ---------- Ticker of facts (перетаскиваемая) ---------- */
+  .ticker{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    z-index:6;
+    background:linear-gradient(180deg, rgba(8,25,17,0.35), rgba(0,0,0,0.9));
+    border-top:1px solid var(--line);
+    overflow:hidden;
+    padding:11px 0;
+    cursor:grab;
+    touch-action:none;
+    user-select:none;
+  }
+
+  .ticker.dragging{ cursor:grabbing; }
+
+  .ticker-track{
+    display:flex;
+    gap:52px;
+    white-space:nowrap;
+    width:max-content;
+    will-change:transform;
+  }
+
+  .ticker-item{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.01em;
+    color:var(--sage);
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .ticker-item::before{
+    content:"₽";
+    color:var(--lamp);
+    opacity:0.65;
+  }
+
+  /* ---------- Impulse pause card ---------- */
+  .impulse-wrap{
+    position:relative;
+    z-index:3;
+    width:100%;
+    max-width:420px;
+    margin-top:44px;
+    display:none;
+  }
+
+  .impulse-wrap.show{
+    display:block;
+    animation:dropIn 0.45s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .impulse-card{
+    background:linear-gradient(180deg, var(--bg-panel2) 0%, rgba(6,20,13,0.8) 100%);
+    border:1px solid var(--lamp-dim, #a97e42);
+    border-color:#6b5330;
+    border-radius:2px;
+    padding:32px;
+    box-shadow:0 26px 52px -26px rgba(0,0,0,0.55);
+  }
+
+  .impulse-eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:var(--lamp);
+    margin-bottom:12px;
+  }
+
+  .impulse-question{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:22px;
+    color:var(--paper);
+    margin-bottom:24px;
+  }
+
+  .impulse-actions{ display:flex; gap:12px; }
+
+  .impulse-btn{
+    flex:1;
+    padding:14px;
+    background:var(--lamp);
+    color:#000;
+    border:none;
+    border-radius:2px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+
+  .impulse-btn:hover{ background:#f1c383; }
+
+  .impulse-btn.ghost{
+    background:transparent;
+    color:var(--sage);
+    border:1px solid var(--line-bright);
+  }
+
+  .impulse-btn.ghost:hover{ border-color:var(--lamp); color:var(--lamp); }
+
+  .impulse-pause{ margin-top:4px; }
+
+  .impulse-line{
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    line-height:1.5;
+    color:var(--sage);
+    margin-bottom:18px;
+  }
+
+  .pause-bar{
+    width:100%;
+    height:3px;
+    background:var(--line);
+    border-radius:2px;
+    overflow:hidden;
+    margin-bottom:18px;
+  }
+
+  .pause-fill{
+    height:100%;
+    width:0%;
+    background:var(--lamp);
+  }
+
+  .pause-fill.run{
+    animation:pauseFill 10s linear forwards;
+  }
+
+  @keyframes pauseFill{
+    from{ width:0%; }
+    to{ width:100%; }
+  }
+
+  .impulse-skip{
+    width:100%;
+    padding:12px;
+    background:transparent;
+    border:1px solid var(--line-bright);
+    color:var(--sage);
+    border-radius:2px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:all 0.2s ease;
+  }
+
+  .impulse-skip:hover{ border-color:var(--lamp); color:var(--lamp); }
+
+  /* ---------- Investment projection inside bag ---------- */
+  .invest-box{
+    margin-top:20px;
+    padding:16px;
+    border:1px dashed #b8bcae;
+    border-radius:3px;
+    background:rgba(22,36,28,0.04);
+  }
+
+  .invest-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#5a6355;
+    margin-bottom:8px;
+    line-height:1.4;
+  }
+
+  .invest-value{
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    color:#16241c;
+    margin-bottom:4px;
+  }
+
+  .invest-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:#7a8a4f;
+  }
+
+  /* ---------- Session history ---------- */
+  .history-wrap{
+    position:relative;
+    z-index:3;
+    width:100%;
+    max-width:380px;
+    margin-top:44px;
+    display:none;
+  }
+
+  .history-wrap.show{ display:block; }
+
+  .history-summary{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--sage);
+    margin-bottom:14px;
+    text-align:center;
+  }
+
+  .history-summary strong{ color:var(--lamp); font-weight:600; }
+
+  .history-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .history-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--bg-panel);
+    border-left:2px solid var(--lamp);
+    border-radius:0 2px 2px 0;
+    padding:10px 14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--paper);
+    animation:dropIn 0.35s ease;
+  }
+
+  .history-item .h-amount{ color:var(--paper); }
+  .history-item .h-hours{ color:var(--sage); }
+  .history-item .h-time{ color:var(--sage-dim); font-size:10px; }
+
+  /* ---------- FAQ accordion ---------- */
+  .faq-section-title{
+    width:100%;
+    max-width:600px;
+    margin-top:64px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:var(--lamp);
+    opacity:0.8;
+  }
+
+  .faq-wrap{
+    position:relative;
+    z-index:3;
+    width:100%;
+    max-width:600px;
+    margin-top:12px;
+  }
+
+  .faq-toggle{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--line-bright);
+    padding:14px 0;
+    cursor:pointer;
+    text-align:left;
+    color:var(--paper);
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:17px;
+  }
+
+  .faq-toggle span:first-child{
+    flex:1;
+    text-align:left;
+  }
+
+  .faq-toggle .chev{
+    width:9px; height:9px;
+    border-right:1.5px solid var(--lamp);
+    border-bottom:1.5px solid var(--lamp);
+    transform:rotate(45deg);
+    transition:transform 0.25s ease;
+    flex-shrink:0;
+  }
+
+  .faq-toggle.open .chev{ transform:rotate(225deg); }
+
+  .faq-content{
+    display:none;
+    padding:18px 2px 4px;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    line-height:1.7;
+    color:var(--sage);
+  }
+
+  .faq-content.open{ display:block; animation:dropIn 0.35s ease; }
+
+  .faq-content p{ margin-bottom:14px; }
+  .faq-content p:last-child{ margin-bottom:0; }
+
+  .faq-content .accent{ color:var(--lamp); }
+
+  @media (max-width:480px){
+    .panel{ padding:28px 22px; }
+    header{ padding-top:64px; }
+    .sched-group{ flex-direction:column; gap:26px; }
+    .impulse-actions{ flex-direction:column; }
+    .faq-toggle{ font-size:15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="money-field" id="moneyField"></div>
+
+<div class="vignette"></div>
+<svg class="grain" xmlns="http://www.w3.org/2000/svg">
+  <filter id="noise">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#noise)"/>
+</svg>
+
+<div class="ticker" id="tickerEl">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<div class="scene">
+
+  <header>
+    <div class="eyebrow">Час жизни</div>
+    <h1>Сколько стоит<br><em>твой час</em>?</h1>
+    <p class="sub">Введи доход и график — и любая покупка превратится в часы твоей жизни, которые за неё отданы.</p>
+  </header>
+
+  <div class="panel">
+    <div class="panel-heading"><span class="num">01</span>твой доход</div>
+
+    <div class="field">
+      <label for="salary">Доход в месяц</label>
+      <div class="input-row">
+        <input type="text" id="salary" class="money-input" inputmode="numeric" placeholder="100 000">
+        <span class="unit">₽</span>
+      </div>
+    </div>
+
+    <div class="schedule-fields" id="scheduleFields">
+      <div class="sched-group" id="fieldsShifts">
+        <div class="field">
+          <label for="shiftsCount">Смен в месяц</label>
+          <div class="input-row">
+            <input type="number" id="shiftsCount" inputmode="numeric" placeholder="20" min="1" max="31">
+            <span class="unit">смен</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="shiftLength">Часов в смену</label>
+          <div class="input-row">
+            <input type="number" id="shiftLength" inputmode="numeric" placeholder="12" min="1" max="24">
+            <span class="unit">ч</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="calc-btn" id="calcBtn">Посчитать</button>
+  </div>
+
+  <div class="receipt-wrap" id="receiptWrap">
+    <div class="receipt" id="receiptEl">
+      <div class="receipt-no" id="receiptNo">№ 00000</div>
+      <div class="r-eyebrow">Чек · Час жизни</div>
+      <div class="r-title">твоё время в деньгах</div>
+
+      <div class="r-rate">
+        <div class="label">Стоимость часа</div>
+        <div class="value" id="rateValue">— <span>₽/ч</span></div>
+      </div>
+
+      <div class="barcode"></div>
+      <div class="r-footer" id="receiptFooter">час жизни · время не вернуть</div>
+    </div>
+
+    <div class="actions">
+      <button id="downloadReceiptBtn">Скачать чек</button>
+      <button id="shareReceiptBtn">Поделиться</button>
+    </div>
+  </div>
+
+  <div class="panel dark" id="purchasePanel" style="display:none;">
+    <div class="panel-heading"><span class="num">02</span>твоя покупка</div>
+
+    <div class="field">
+      <label for="purchaseAmount">Сумма покупки</label>
+      <div class="input-row">
+        <input type="text" id="purchaseAmount" class="money-input" inputmode="numeric" placeholder="15 000">
+        <span class="unit">₽</span>
+      </div>
+    </div>
+
+    <button class="calc-btn" id="purchaseBtn">Посчитать</button>
+  </div>
+
+  <div class="impulse-wrap" id="impulseWrap">
+    <div class="impulse-card">
+      <div class="impulse-eyebrow">Секунду</div>
+      <div class="impulse-question" id="impulseQuestion">Это спонтанная покупка?</div>
+
+      <div class="impulse-actions" id="impulseActions">
+        <button class="impulse-btn" id="impulseYes">Да, спонтанно</button>
+        <button class="impulse-btn ghost" id="impulseNo">Нет, планировал(а)</button>
+      </div>
+
+      <div class="impulse-pause" id="impulsePause" style="display:none;">
+        <p class="impulse-line" id="impulseLine"></p>
+        <div class="pause-bar"><div class="pause-fill" id="pauseFill"></div></div>
+        <button class="impulse-skip" id="impulseSkip">Всё равно показать</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bag-wrap" id="bagWrap">
+    <div class="bag" id="bagEl">
+      <div class="handle left"></div>
+      <div class="handle right"></div>
+      <div class="bag-no" id="bagNo">№ 00000</div>
+      <div class="bag-eyebrow">Твоя покупка</div>
+      <div class="bag-amount" id="bagAmount">— ₽</div>
+
+      <div class="bag-stats">
+        <div class="stat-row">
+          <span class="stat-label">Часы</span>
+          <span class="stat-value" id="bagHours">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Дни</span>
+          <span class="stat-value" id="bagDays">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Месяцы</span>
+          <span class="stat-value" id="bagMonths">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Годы</span>
+          <span class="stat-value" id="bagYears">—</span>
+        </div>
+        <div class="stat-row extra" id="bagExtraRow" style="display:none;">
+          <span class="stat-label" id="bagExtraLabel">—</span>
+          <span class="stat-value" id="bagExtraValue">—</span>
+        </div>
+      </div>
+
+      <div class="invest-box" id="investBox">
+        <div class="invest-label">если вложить на 5 лет под 10% годовых</div>
+        <div class="invest-value" id="investValue">—</div>
+        <div class="invest-note" id="investNote">—</div>
+      </div>
+
+      <div class="life-compare" id="lifeCompare" style="display:none;">
+        <div class="life-compare-label">это примерно</div>
+        <div class="life-chips" id="lifeChips"></div>
+      </div>
+
+      <div class="bag-tag">цена в часах жизни</div>
+      <div class="rhetoric-line" id="rhetoricLine"></div>
+    </div>
+
+    <div class="actions">
+      <button id="downloadBagBtn">Скачать</button>
+      <button id="shareBagBtn">Поделиться</button>
+    </div>
+  </div>
+
+  <div class="history-wrap" id="historyWrap">
+    <div class="history-summary" id="historySummary"></div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+  <div class="faq-section-title">Как это устроено</div>
+  <div class="faq-wrap">
+    <button class="faq-toggle">
+      <span>Как это вообще считается?</span>
+      <span class="chev"></span>
+    </button>
+    <div class="faq-content">
+      <p>Без магии, только арифметика. Берём твою зарплату и делим на то, сколько часов ты <span class="accent">реально</span> пашешь в месяц — смены умножить на их длину. Получаем честную цену твоего часа.</p>
+      <p>Дальше всё просто: любая покупка — это сумма, делённая на цену часа. Хочешь в днях — делим на длину смены. В месяцах и годах — на месячные часы и их же умноженные на 12.</p>
+      <p>Что мы <span class="accent">не</span> учитываем: налоги, отпускные, больничные и то, что ты залипаешь в телефон половину смены. Это грязная, честная цена часа — не как в резюме, а как в жизни.</p>
+    </div>
+
+    <button class="faq-toggle">
+      <span>Почему за основу взяты смены, а не просто оклад?</span>
+      <span class="chev"></span>
+    </button>
+    <div class="faq-content">
+      <p>Потому что не все живут по формуле «40 часов, пять дней». Сменный график, подработки, фриланс — везде разное количество рабочих часов в месяц, и только через них можно честно посчитать цену часа.</p>
+      <p>Если у тебя стандартный график — просто укажи 20-22 смены по 8 часов, и получится <span class="accent">то же самое</span>, что обычный оклад. Формула одна, гибкости больше.</p>
+    </div>
+
+    <button class="faq-toggle">
+      <span>Насколько точна проекция «а если бы вложил»?</span>
+      <span class="chev"></span>
+    </button>
+    <div class="faq-content">
+      <p>Это иллюстрация сложного процента, а не финансовый совет. Мы берём условные 10% годовых на 5 лет — среднюю ориентировочную доходность, а не гарантию. Настоящая цифра зависит от инструмента, риска и рынка.</p>
+      <p>Смысл блока не в точном прогнозе, а в <span class="accent">наглядности</span>: показать, что время само по себе работает в твою пользу, если не тратить прямо сейчас.</p>
+    </div>
+  </div>
+
+  <div class="faq-section-title">Вопросы, которые стоит задать себе</div>
+  <div class="faq-wrap">
+    <button class="faq-toggle">
+      <span>Почему скидка в 70% ощущается как подарок, а не трата?</span>
+      <span class="chev"></span>
+    </button>
+    <div class="faq-content">
+      <p>Мозг воспринимает скидку не как трату, а как <span class="accent">спасённые</span> деньги — даже если ты вообще не планировал эту покупку. Чем выше зачёркнутая цена, тем сильнее ощущение выгоды и тем меньше в решении остаётся логики.</p>
+    </div>
+
+    <button class="faq-toggle">
+      <span>Откуда берётся ощущение «я это заслужил»?</span>
+      <span class="chev"></span>
+    </button>
+    <div class="faq-content">
+      <p>Классическая эмоциональная компенсация: мозг ищет быстрый источник дофамина после стресса или усталости, и покупка — самый доступный способ его получить. Проблема в том, что облегчение длится минуты, а последствия — <span class="accent">до зарплаты</span>.</p>
+    </div>
+
+    <button class="faq-toggle">
+      <span>Правда что картой тратишь легче, чем наличными?</span>
+      <span class="chev"></span>
+    </button>
+    <div class="faq-content">
+      <p>Да, это подтверждённый эффект. «Боль от траты» физически слабее, когда деньги не покидают руки в виде купюр — карта убирает тактильный сигнал «я отдаю ресурс», и мозг просто <span class="accent">не фиксирует</span> трату так же ярко.</p>
+    </div>
+
+    <button class="faq-toggle">
+      <span>Зачем ждать перед покупкой, если она и так нравится?</span>
+      <span class="chev"></span>
+    </button>
+    <div class="faq-content">
+      <p>Импульс живёт в среднем 10-15 минут — именно столько нужно, чтобы эмоциональная часть мозга уступила место более взвешенной. Подождать не значит отказаться — значит дать решению шанс быть <span class="accent">твоим</span>, а не покупки.</p>
+    </div>
+
+    <button class="faq-toggle">
+      <span>Что такое лайфстайл-инфляция и почему её сложно заметить?</span>
+      <span class="chev"></span>
+    </button>
+    <div class="faq-content">
+      <p>Это когда доход растёт, а вместе с ним незаметно растут и траты — аренда получше, новые подписки, привычки. Через пару лет зарплата в два раза больше, а свободных денег столько же. Заметить это можно только одним способом — <span class="accent">учётом</span>.</p>
+    </div>
+  </div>
+
+  <footer>час жизни · время не вернуть</footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+  // ---------- Elements ----------
+  const salaryInput = document.getElementById('salary');
+  const calcBtn = document.getElementById('calcBtn');
+  const receiptWrap = document.getElementById('receiptWrap');
+  const rateValue = document.getElementById('rateValue');
+  const receiptEl = document.getElementById('receiptEl');
+  const downloadReceiptBtn = document.getElementById('downloadReceiptBtn');
+  const shareReceiptBtn = document.getElementById('shareReceiptBtn');
+
+  const purchasePanel = document.getElementById('purchasePanel');
+  const purchaseAmount = document.getElementById('purchaseAmount');
+  const purchaseBtn = document.getElementById('purchaseBtn');
+  const bagWrap = document.getElementById('bagWrap');
+  const bagEl = document.getElementById('bagEl');
+  const bagAmount = document.getElementById('bagAmount');
+  const bagHours = document.getElementById('bagHours');
+  const bagDays = document.getElementById('bagDays');
+  const bagMonths = document.getElementById('bagMonths');
+  const bagYears = document.getElementById('bagYears');
+  const downloadBagBtn = document.getElementById('downloadBagBtn');
+  const shareBagBtn = document.getElementById('shareBagBtn');
+
+  const scheduleFields = document.getElementById('scheduleFields');
+  const shiftsCountInput = document.getElementById('shiftsCount');
+  const shiftLengthInput = document.getElementById('shiftLength');
+
+  const impulseWrap = document.getElementById('impulseWrap');
+  const impulseActions = document.getElementById('impulseActions');
+  const impulsePause = document.getElementById('impulsePause');
+  const impulseLine = document.getElementById('impulseLine');
+  const impulseYes = document.getElementById('impulseYes');
+  const impulseNo = document.getElementById('impulseNo');
+  const impulseSkip = document.getElementById('impulseSkip');
+  const pauseFill = document.getElementById('pauseFill');
+
+  const investValue = document.getElementById('investValue');
+  const investNote = document.getElementById('investNote');
+
+  const historyWrap = document.getElementById('historyWrap');
+  const historySummary = document.getElementById('historySummary');
+  const historyList = document.getElementById('historyList');
+
+  
+  const tickerTrack = document.getElementById('tickerTrack');
+  const moneyField = document.getElementById('moneyField');
+
+  // ---------- Floating money/digits/phrases field (full background) ----------
+  (function initMoneyField(){
+    const DIGITS = ['0','1','2','3','4','5','6','7','8','9'];
+
+    const SYMBOLS = ['%','₽','+','−','×','/','×2','₽/ч','24','66','1,2'];
+
+    const NUMBERS = ['100 000','15 000','5 лет','19:00'];
+
+    // проценты — редкие гости фона, а не основной шум
+    const PERCENTS = ['12%','48%','0,3%','40%','7%','10%'];
+
+    const PHRASES = [
+      'час жизни', 'время не вернуть', 'хочу или нужно',
+      'цена в часах', 'мозг остынет', 'если сомневаешься — нет',
+      'твой час', '24 часа', 'не сравнивай с ценником',
+      'скидка — не повод', 'осознанный выбор', 'пауза перед покупкой'
+    ];
+
+    // веса: цифры и символы — часто, числа и проценты — редко, фразы — заметно чаще прежнего
+    const POOL = [
+      ...DIGITS, ...DIGITS,
+      ...SYMBOLS, ...SYMBOLS,
+      ...NUMBERS,
+      ...PERCENTS,
+      ...PHRASES, ...PHRASES
+    ];
+
+    const colors = ['#8f9990', '#586158', '#3a5442', '#a97e42', '#7fa088'];
+
+    // "bag"-генератор: каждый элемент пула выходит ровно раз за проход,
+    // прежде чем пул перемешается заново — так один и тот же символ
+    // не встретится, пока не пройдут почти все остальные
+    let bag = [];
+    function nextItem(){
+      if(bag.length === 0) bag = shuffleArray(POOL);
+      return bag.pop();
+    }
+
+    const count = 68;
+    let html = '';
+    for(let i = 0; i < count; i++){
+      const item = nextItem();
+      const isPhrase = PHRASES.includes(item);
+      const left = Math.random() * 100;
+      const size = isPhrase ? (16 + Math.random() * 10) : (11 + Math.random() * 16);
+      const orbitDur = 40 + Math.random() * 50;
+      const blinkDur = 20 + Math.random() * 18;
+      const delay = -Math.random() * 36;
+      const peak = (isPhrase ? (0.30 + Math.random() * 0.35) : (0.15 + Math.random() * 0.35)) * 0.9;
+      const rx = 18 + Math.random() * 46;
+      const ry = 14 + Math.random() * 36;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const cls = isPhrase ? 'glyph phrase' : 'glyph';
+
+      html += `<span class="${cls}" style="left:${left}%; top:${Math.random() * 100}%; font-size:${size}px; color:${color}; --peak:${peak}; --rx:${rx}px; --ry:${ry}px; animation-duration:${orbitDur}s, ${blinkDur}s; animation-delay:${delay}s, ${delay}s;">${item}</span>`;
+    }
+    moneyField.innerHTML = html;
+  })();
+
+  // ---------- Content: facts, tips, impulse lines ----------
+  const FACTS = [
+    "78% онлайн-покупок совершаются импульсивно. ты точно не в их числе?",
+    "среднее время сожаления после спонтанной покупки — 4 минуты. после вклада — ноль",
+    "мозг реагирует на скидку как на угрозу упустить выгоду. логика в этот момент не участвует",
+    "кредиткой платить «не больно» — мозгу проще тратить то, что не выглядит как деньги",
+    "люди чаще жалеют о том, что купили, чем о том, что не купили. совпадение? не думаем",
+    "правило 24 часов работает не потому что ты слабый. это работает у всех — мозг такой у людей",
+    "финансовая грамотность — это не excel. это пауза перед кнопкой «купить»",
+    "72% не считают, сколько часов жизни стоит их подписка. ты хотя бы досюда дочитал",
+    "больше вещей не значит больше счастья. это доказано, а не просто написано на кружке",
+    "скидка 70% всё ещё значит минус деньги, а не плюс. проверь ещё раз",
+    "импульсивные покупки чаще случаются вечером, когда сила воли уже на нуле",
+    "чувство голода увеличивает импульсивные траты — даже не в продуктовом",
+    "красный ценник действует на мозг сильнее, чем сама скидка",
+    "подписки — это деньги, которые уходят, пока ты спишь",
+    "в среднем человек забывает о трети своих активных подписок",
+    "«последний товар на складе» — классический трюк, а не совпадение",
+    "чем быстрее решение о покупке, тем выше шанс пожалеть о ней",
+    "откладывать 10% с зарплаты — не подвиг, а привычка",
+    "сложный процент — самая недооценённая суперсила в личных финансах",
+    "деньги на впечатления приносят больше радости, чем деньги на вещи",
+    "сравнение себя с другими в соцсетях увеличивает траты на статусные вещи",
+    "чем больше витрин ты видишь за день, тем больше кажется, что тебе нужно",
+    "«я заслужил» — любимая фраза мозга ровно перед импульсивной покупкой",
+    "рассрочка делает крупные траты психологически почти незаметными",
+    "хочешь тратить меньше — выйди из рассылок любимых магазинов",
+    "стресс — один из главных триггеров спонтанных покупок",
+    "деньги на карте ощущаются менее реальными, чем деньги в руке",
+    "каждая пятая крупная покупка совершается под влиянием рекламы за последние сутки",
+    "финансовая подушка — это не роскошь, это спокойный сон",
+    "большинство разбогатевших людей построили это на привычках, а не на одной зарплате",
+    "чем реже ты проверяешь баланс, тем больше в итоге тратишь",
+    "«всего 990 ₽ в месяц» — тоже цена, просто растянутая во времени",
+    "люди системно недооценивают, сколько тратят на мелкие покупки за месяц",
+    "«трачу на себя» — не оправдание, если бюджет уже трещит",
+    "осознанные траты начинаются с одного вопроса: зачем мне это",
+    "чувство вины после покупки — сигнал, а не то, что нужно заглушить ещё одной покупкой",
+    "деньги — инструмент, а не цель. просто иногда легко об этом забыть",
+    "большинство людей тратят заметно больше именно в день зарплаты",
+    "свет и музыка в магазине спроектированы так, чтобы ты купил больше",
+    "любимый трюк ритейла — убедить тебя, что ты экономишь, пока ты тратишь",
+    "если сомневаешься — положи товар обратно и подумай ночь",
+    "деньги, потраченные с умом сегодня, — это свобода через 10 лет",
+    "лишняя чашка кофе в день — это отпуск раз в год, если её не покупать",
+    "цель без цифры — просто мечта, а не финансовый план",
+    "компульсивный шопинг активирует те же зоны мозга, что и азарт",
+    "средний человек тратит на подписки почти в 2 раза больше, чем думает",
+    "чем короче пауза перед покупкой, тем выше шанс сожаления",
+    "финансовая грамотность не про то, сколько ты зарабатываешь. про то, что делаешь с этим",
+    "время — единственный невозобновляемый ресурс. трать деньги с этим в уме",
+    "«накоплю потом» — одна из самых дорогих фраз в личных финансах",
+    "долг по кредитке растёт быстрее, чем ты успеваешь его закрывать",
+    "люди чаще экономят на важном и тратят на неважное — просто потому что так приятнее",
+    "распродажи создают искусственную срочность там, где её на самом деле нет",
+    "чувство «я нашёл выгодную сделку» живёт дольше, чем сама выгода",
+    "деньги любят не только учёт, но и решения без спешки",
+    "каждая пятая покупка в приложениях — случайная, а не запланированная",
+    "бесплатная доставка от суммы — повод потратить больше, а не сэкономить",
+    "чем ярче реклама, тем меньше в ней логики и больше эмоций",
+    "осознанность в тратах — это не аскеза, это выбор без сожалений",
+    "люди тратят больше наличными на впечатления и картой — на вещи",
+    "рост доходов почти всегда обгоняется ростом расходов — это лайфстайл-инфляция",
+    "цель «накопить когда-нибудь» не сработает. нужна дата",
+    "большинство людей не считают упущенную выгоду от нерационального шопинга",
+    "деньги, вложенные в 25 лет, работают в разы дольше денег, вложенных в 35",
+    "импульсивная покупка редко решает ту проблему, ради которой её купили",
+    "финансовая тревога чаще связана не с суммой дохода, а с отсутствием плана",
+    "каждый второй жалеет о крупной покупке уже в первый месяц",
+    "товары повседневного спроса специально ставят в дальний угол магазина",
+    "цена без сравнения — просто число. сравни её с часами своей жизни",
+    "деньги не решают все проблемы, но нерешённые деньги создают новые",
+    "чем больше вариантов на витрине, тем проще поддаться первому попавшемуся",
+    "любимая эмоция маркетолога — не радость, а страх что-то упустить",
+    "трать так, будто объясняешь эту покупку себе завтрашнему",
+    "осознанные траты начинаются с вопроса «куда делась зарплата», заданного не в конце месяца",
+    "если покупка не переживёт неделю без сожаления — она того не стоила",
+    "деньги на «плохой день» тратятся быстрее, чем деньги по плану",
+    "большинство рабочих бюджетов начинаются не с урезания, а с честности",
+    "«это же копейки» — самая частая причина слитого бюджета",
+    "чем реже ты видишь витрину, тем реже хочешь то, что на ней",
+    "долгосрочная цель побеждает краткосрочное желание системой, а не силой воли",
+    "деньги на здоровье и обучение редко бывают лишними",
+    "привычка откладывать формируется примерно за 66 дней — не силой воли, а повторением",
+    "импульс в среднем живёт 10-15 минут. подожди — и часто он уходит сам",
+    "финансово грамотный человек не тот, кто не тратит, а тот, кто знает зачем",
+    "час твоей жизни — не абстракция, а вполне конкретная цена",
+    "чем чаще платишь картой, тем меньше ощущаешь трату — это факт, не оценка",
+    "люди переоценивают радость от вещи и недооценивают радость от свободы",
+    "финансовая грамотность всё ещё не входит в обязательную школьную программу",
+    "траты «на эмоциях» забываются через месяц — а долг за них остаётся",
+    "осознанный шопинг — это список покупок, написанный не в магазине",
+    "деньги утекают быстрее всего туда, где нет учёта",
+    "цена ошибки в бюджете растёт со временем, а не остаётся прежней",
+    "лучшая инвестиция — та, которую ты понимаешь, а не та, о которой все говорят",
+    "если покупка — способ справиться с чувствами, купи вместо неё время подумать",
+    "большинство крупных состояний строились десятилетиями, а не за одну сделку",
+    "деньги — не про жадность и не про её отсутствие. деньги — про выбор",
+    "хочешь узнать, во что ты веришь на самом деле — посмотри на свою выписку",
+    "финансовая свобода начинается с одного слова: «хватит»",
+    "подумай, сколько часов жизни стоит подписка, которой ты не пользовался месяц",
+    "час твоей жизни — вот с чем стоит сравнивать любой ценник"
+  ];
+
+  const TIPS = [
+    "подожди 24 часа — мозг остынет",
+    "хочу или нужно? выбери честно",
+    "скидка — не повод, если не планировал",
+    "цена в рублях врёт. цена в часах — нет",
+    "не сравнивай с ценником — сравнивай с собой",
+    "если сомневаешься — значит нет"
+  ];
+
+  const IMPULSE_LINES = [
+    "классика. дай мозгу 10 секунд — вдруг перехочется",
+    "спонтанно значит потом. считаем секунды",
+    "ладно, подождём. мозг любит быть медленным героем",
+    "10 секунд ничего не решат. но начать стоит с них"
+  ];
+
+  // психологический триггер: риторический вопрос без ответа и без совета
+  const RHETORIC_LINES = [
+    "через месяц вспомнишь, на что ушли эти часы?",
+    "стоило бы это того, если бы платил часами, а не деньгами?",
+    "что бы ты почувствовал, увидев эту сумму в конце года?",
+    "это тот час, который ты бы отдал не задумываясь?",
+    "если бы эти часы вернуть — на что бы потратил их теперь?"
+  ];
+
+  // жизненные сравнения: label в разных склонениях + длительность в часах
+  const LIFE_ITEMS = [
+    { forms:['книгу', 'книги', 'книг'], hours:6 },
+    { forms:['фильм', 'фильма', 'фильмов'], hours:2 },
+    { forms:['тренировку', 'тренировки', 'тренировок'], hours:1 },
+    { forms:['прогулку', 'прогулки', 'прогулок'], hours:1 },
+    { forms:['домашний ужин', 'домашних ужина', 'домашних ужинов'], hours:1.5 },
+    { forms:['чашку кофе', 'чашки кофе', 'чашек кофе'], hours:0.25 },
+    { forms:['поездку на выходные', 'поездки на выходные', 'поездок на выходные'], hours:48 },
+    { forms:['ночь сна', 'ночи сна', 'ночей сна'], hours:8 },
+    { forms:['вечер с семьёй', 'вечера с семьёй', 'вечеров с семьёй'], hours:2 }
+  ];
+
+  // склонение по числу (1 книгу / 2 книги / 5 книг)
+  function pluralForm(n, forms){
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    if(mod100 >= 11 && mod100 <= 14) return forms[2];
+    if(mod10 === 1) return forms[0];
+    if(mod10 >= 2 && mod10 <= 4) return forms[1];
+    return forms[2];
+  }
+
+  function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function shuffleArray(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // ---------- Ticker (медленная, перетаскиваемая мышью/трекпадом) ----------
+  (function initTicker(){
+    const tickerEl = document.getElementById('tickerEl');
+    const shuffled = shuffleArray(FACTS);
+    const items = [...shuffled, ...shuffled].map(f => `<span class="ticker-item">${f}</span>`).join('');
+    tickerTrack.innerHTML = items;
+
+    let halfWidth = 0;
+    let posX = 0;
+    const pxPerSecond = 22; // медленно и вдумчиво — успеваешь дочитать
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartPos = 0;
+    let lastInteraction = 0;
+
+    requestAnimationFrame(() => {
+      halfWidth = tickerTrack.scrollWidth / 2;
+    });
+
+    function wrap(x){
+      if(halfWidth <= 0) return x;
+      x = x % halfWidth;
+      if(x > 0) x -= halfWidth;
+      return x;
+    }
+
+    function pointerDown(clientX){
+      isDragging = true;
+      dragStartX = clientX;
+      dragStartPos = posX;
+      lastInteraction = performance.now();
+      tickerEl.classList.add('dragging');
+    }
+
+    function pointerMove(clientX){
+      if(!isDragging) return;
+      posX = wrap(dragStartPos + (clientX - dragStartX));
+      lastInteraction = performance.now();
+    }
+
+    function pointerUp(){
+      if(!isDragging) return;
+      isDragging = false;
+      lastInteraction = performance.now();
+      tickerEl.classList.remove('dragging');
+    }
+
+    tickerEl.addEventListener('pointerdown', e => {
+      pointerDown(e.clientX);
+      tickerEl.setPointerCapture && tickerEl.setPointerCapture(e.pointerId);
+    });
+    window.addEventListener('pointermove', e => pointerMove(e.clientX));
+    window.addEventListener('pointerup', pointerUp);
+    window.addEventListener('pointercancel', pointerUp);
+
+    // трекпад / горизонтальный скролл — тоже листает ленту вручную
+    tickerEl.addEventListener('wheel', e => {
+      if(Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      posX = wrap(posX - e.deltaX);
+      lastInteraction = performance.now();
+    }, {passive:false});
+
+    let lastFrame = null;
+    function tick(time){
+      if(lastFrame === null) lastFrame = time;
+      const dt = (time - lastFrame) / 1000;
+      lastFrame = time;
+
+      const idleFor = performance.now() - lastInteraction;
+      if(!isDragging && idleFor > 1200){
+        posX = wrap(posX - pxPerSecond * dt);
+      }
+
+      tickerTrack.style.transform = `translateX(${posX}px)`;
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  // ---------- FAQ accordion ----------
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const content = btn.nextElementSibling;
+      const isOpen = content.classList.toggle('open');
+      btn.classList.toggle('open', isOpen);
+    });
+  });
+
+  let hourlyRate = null;
+  let dayHours = 8;
+  let monthlyHours = 160;
+
+  // ---------- Money field formatting (spaces as thousand separators) ----------
+  function rawDigits(str){
+    return (str || '').replace(/\D/g, '');
+  }
+
+  function formatMoney(str){
+    const digits = rawDigits(str);
+    if(!digits) return '';
+    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  }
+
+  document.querySelectorAll('.money-input').forEach(input => {
+    input.addEventListener('input', () => {
+      const digits = rawDigits(input.value);
+      input.value = formatMoney(digits);
+    });
+  });
+
+  function parseMoney(input){
+    const digits = rawDigits(input.value);
+    return digits ? parseFloat(digits) : NaN;
+  }
+
+  // ---------- Money crumple sound (synthesized, no external files) ----------
+  let audioCtx = null;
+  function getCtx(){
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function playCrumple(){
+    try{
+      const ctx = getCtx();
+      const duration = 0.28;
+      const bufferSize = ctx.sampleRate * duration;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      for(let i = 0; i < bufferSize; i++){
+        let sample = (Math.random() * 2 - 1) * 0.35;
+        if(Math.random() < 0.02){
+          sample += (Math.random() * 2 - 1) * 0.9;
+        }
+        const env = Math.pow(1 - i / bufferSize, 1.6);
+        data[i] = sample * env;
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const bandpass = ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.setValueAtTime(2200, ctx.currentTime);
+      bandpass.frequency.exponentialRampToValueAtTime(5200, ctx.currentTime + duration);
+      bandpass.Q.value = 0.7;
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+      noise.connect(bandpass);
+      bandpass.connect(gain);
+      gain.connect(ctx.destination);
+
+      noise.start();
+      noise.stop(ctx.currentTime + duration);
+    } catch(err){ /* audio not available, fail silently */ }
+  }
+
+  // ---------- Rate calculation ----------
+  function formatNumber(n){
+    return Math.round(n).toLocaleString('ru-RU');
+  }
+
+  // Заменяет точку на запятую в дробных числах (русский формат)
+  function ru(n, digits){
+    return n.toFixed(digits).replace('.', ',');
+  }
+
+  function calcRate(){
+    const salary = parseMoney(salaryInput);
+    if(!salary || salary <= 0) return null;
+
+    const shifts = parseFloat(shiftsCountInput.value);
+    const length = parseFloat(shiftLengthInput.value);
+    if(!shifts || !length || shifts <= 0 || length <= 0) return null;
+    dayHours = length;
+    monthlyHours = shifts * length;
+
+    return salary / monthlyHours;
+  }
+
+  function randomNo(){
+    return '№ ' + String(Math.floor(10000 + Math.random() * 89999));
+  }
+
+  calcBtn.addEventListener('click', () => {
+    const rate = calcRate();
+    if(rate === null){
+      salaryInput.style.borderColor = '#c0623f';
+      return;
+    }
+    salaryInput.style.borderColor = '';
+    hourlyRate = rate;
+    playCrumple();
+    rateValue.classList.remove('flash');
+    void rateValue.offsetWidth;
+    rateValue.innerHTML = `${formatNumber(rate)} <span>₽/ч</span>`;
+    rateValue.classList.add('flash');
+    document.getElementById('receiptFooter').textContent = pick(TIPS);
+    document.getElementById('receiptNo').textContent = randomNo();
+    receiptWrap.classList.add('show');
+    receiptEl.classList.remove('breathe');
+    void receiptEl.offsetWidth;
+    receiptEl.classList.add('breathe');
+    purchasePanel.style.display = 'block';
+    bagWrap.classList.remove('show');
+    impulseWrap.classList.remove('show');
+    receiptWrap.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+
+  // ---------- Purchase calculation ----------
+  let pendingStats = null;
+  let purchaseHistory = [];
+
+  function computeStats(amount){
+    const totalHours = amount / hourlyRate;
+    const h = Math.floor(totalHours);
+    const m = Math.round((totalHours - h) * 60);
+    const days = totalHours / dayHours;
+    const months = totalHours / monthlyHours;
+    const years = months / 12;
+
+    const hoursText = h === 0
+      ? `${m} мин`
+      : (m > 0 ? `${h} ч ${m} мин` : `${h} ч`);
+
+    const daysHtml = days < 1
+      ? `${ru(days * 100, 0)}<small>% дня</small>`
+      : `${ru(days, 1)}<small>дн.</small>`;
+
+    const monthsHtml = months < 0.01
+      ? `&lt; 0,01<small>мес.</small>`
+      : `${ru(months, 2)}<small>мес.</small>`;
+
+    const yearsHtml = years < 0.01
+      ? `&lt; 0,01<small>лет</small>`
+      : `${ru(years, 2)}<small>лет</small>`;
+
+    const futureValue = amount * Math.pow(1.10, 5);
+    const freeGain = futureValue - amount;
+    const gainHours = freeGain / hourlyRate;
+
+    // доп. сравнение — автоматически подбирается по масштабу суммы
+    const shifts = totalHours / dayHours;
+    const weeks = totalHours / (monthlyHours / 4.345);
+    const weekends = totalHours / (2 * dayHours);
+    const vacations = totalHours / (14 * dayHours);
+
+    let extraLabel = null, extraValue = null;
+    if(days >= 90){
+      extraLabel = 'Отпусков';
+      extraValue = `${ru(vacations, 2)}`;
+    } else if(days >= 20){
+      extraLabel = 'Недель работы';
+      extraValue = `${ru(weeks, 1)}`;
+    } else if(days >= 3){
+      extraLabel = 'Выходных ушло бы';
+      extraValue = `${ru(weekends, 1)}`;
+    } else if(shifts >= 1){
+      extraLabel = 'Подъёмов по будильнику';
+      extraValue = `${Math.ceil(shifts)}`;
+    }
+
+    // жизненные сравнения — 2-4 случайных, только там где счёт ≥ 1
+    const valid = LIFE_ITEMS
+      .map(item => ({ ...item, count: Math.round(totalHours / item.hours) }))
+      .filter(item => item.count >= 1);
+    const chosen = shuffleArray(valid).slice(0, Math.min(valid.length, 2 + Math.floor(Math.random() * 3)));
+    const lifeChips = chosen.map(item => `${item.count} ${pluralForm(item.count, item.forms)}`);
+
+    return {
+      amount, totalHours, hoursText, daysHtml, monthsHtml, yearsHtml,
+      futureValue, freeGain, gainHours, extraLabel, extraValue, lifeChips
+    };
+  }
+
+  function renderBag(stats){
+    bagAmount.dataset.mode = 'money';
+    bagAmount.dataset.money = `${formatNumber(stats.amount)} ₽`;
+    bagAmount.dataset.hours = stats.hoursText;
+    bagAmount.textContent = bagAmount.dataset.money;
+    bagAmount.classList.remove('flash');
+    void bagAmount.offsetWidth;
+    bagAmount.classList.add('flash');
+
+    bagHours.innerHTML = stats.hoursText;
+    bagDays.innerHTML = stats.daysHtml;
+    bagMonths.innerHTML = stats.monthsHtml;
+    bagYears.innerHTML = stats.yearsHtml;
+
+    if(stats.extraLabel){
+      document.getElementById('bagExtraLabel').textContent = stats.extraLabel;
+      document.getElementById('bagExtraValue').textContent = stats.extraValue;
+      document.getElementById('bagExtraRow').style.display = 'flex';
+    } else {
+      document.getElementById('bagExtraRow').style.display = 'none';
+    }
+
+    investValue.textContent = `${formatNumber(stats.futureValue)} ₽`;
+    investNote.innerHTML = `+${formatNumber(stats.gainHours)} ч жизни без единого движения`;
+
+    const lifeCompare = document.getElementById('lifeCompare');
+    const lifeChipsEl = document.getElementById('lifeChips');
+    if(stats.lifeChips.length > 0){
+      lifeChipsEl.innerHTML = stats.lifeChips
+        .map((chip, i) => `<span class="life-chip" style="animation-delay:${i * 90}ms">${chip}</span>`)
+        .join('');
+      lifeCompare.style.display = 'block';
+    } else {
+      lifeCompare.style.display = 'none';
+    }
+
+    document.getElementById('rhetoricLine').textContent = pick(RHETORIC_LINES);
+    document.getElementById('bagNo').textContent = randomNo();
+
+    bagWrap.classList.add('show');
+    bagEl.classList.remove('breathe');
+    void bagEl.offsetWidth;
+    bagEl.classList.add('breathe');
+    bagWrap.scrollIntoView({behavior:'smooth', block:'center'});
+
+    purchaseHistory.unshift(stats);
+    renderHistory();
+  }
+
+  // психологический триггер: клик по сумме показывает её же в часах
+  bagAmount.addEventListener('click', () => {
+    const showingMoney = bagAmount.dataset.mode === 'money';
+    bagAmount.style.transition = 'opacity 0.2s ease';
+    bagAmount.style.opacity = '0';
+    setTimeout(() => {
+      if(showingMoney){
+        bagAmount.textContent = bagAmount.dataset.hours;
+        bagAmount.dataset.mode = 'hours';
+      } else {
+        bagAmount.textContent = bagAmount.dataset.money;
+        bagAmount.dataset.mode = 'money';
+      }
+      bagAmount.style.opacity = '1';
+    }, 200);
+  });
+
+  function renderHistory(){
+    const totalHours = purchaseHistory.reduce((sum, s) => sum + s.totalHours, 0);
+    historySummary.innerHTML = `сегодня обдумано <strong>${purchaseHistory.length}</strong> покупок · итого <strong>${ru(totalHours, 1)} ч</strong> жизни`;
+
+    historyList.innerHTML = purchaseHistory.map(s => {
+      const time = new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+      return `<div class="history-item">
+        <span class="h-amount">${formatNumber(s.amount)} ₽</span>
+        <span class="h-hours">${s.hoursText}</span>
+        <span class="h-time">${time}</span>
+      </div>`;
+    }).join('');
+
+    historyWrap.classList.add('show');
+  }
+
+  purchaseBtn.addEventListener('click', () => {
+    if(!purchaseAmount.value || parseMoney(purchaseAmount) <= 0){
+      purchaseAmount.style.borderColor = '#c0623f';
+      return;
+    }
+    purchaseAmount.style.borderColor = '';
+    if(hourlyRate === null) return;
+
+    playCrumple();
+    const amount = parseMoney(purchaseAmount);
+    pendingStats = computeStats(amount);
+
+    bagWrap.classList.remove('show');
+    impulseActions.style.display = 'flex';
+    impulsePause.style.display = 'none';
+    pauseFill.classList.remove('run');
+    impulseWrap.classList.add('show');
+    impulseWrap.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+
+  // ---------- Impulse pause ----------
+  impulseNo.addEventListener('click', () => {
+    impulseWrap.classList.remove('show');
+    if(pendingStats) renderBag(pendingStats);
+  });
+
+  impulseYes.addEventListener('click', () => {
+    impulseLine.textContent = pick(IMPULSE_LINES);
+    impulseActions.style.display = 'none';
+    impulsePause.style.display = 'block';
+    void pauseFill.offsetWidth; // reset animation
+    pauseFill.classList.add('run');
+
+    pauseFill.addEventListener('animationend', function onEnd(){
+      pauseFill.removeEventListener('animationend', onEnd);
+      impulseWrap.classList.remove('show');
+      if(pendingStats) renderBag(pendingStats);
+    });
+  });
+
+  impulseSkip.addEventListener('click', () => {
+    pauseFill.classList.remove('run');
+    impulseWrap.classList.remove('show');
+    if(pendingStats) renderBag(pendingStats);
+  });
+
+  // ---------- Export receipt ----------
+  downloadReceiptBtn.addEventListener('click', () => {
+    html2canvas(receiptEl, {backgroundColor: null, scale: 3}).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'chas-zhizni-chek.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  });
+
+  shareReceiptBtn.addEventListener('click', async () => {
+    try {
+      const canvas = await html2canvas(receiptEl, {backgroundColor: null, scale: 3});
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], 'chas-zhizni-chek.png', {type:'image/png'});
+        if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], title:'Час жизни'});
+        } else {
+          const link = document.createElement('a');
+          link.download = 'chas-zhizni-chek.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }
+      });
+    } catch(err){ console.error(err); }
+  });
+
+  // ---------- Export bag ----------
+  downloadBagBtn.addEventListener('click', () => {
+    html2canvas(bagEl, {backgroundColor: null, scale: 3}).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'chas-zhizni-pokupka.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  });
+
+  shareBagBtn.addEventListener('click', async () => {
+    try {
+      const canvas = await html2canvas(bagEl, {backgroundColor: null, scale: 3});
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], 'chas-zhizni-pokupka.png', {type:'image/png'});
+        if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], title:'Час жизни'});
+        } else {
+          const link = document.createElement('a');
+          link.download = 'chas-zhizni-pokupka.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }
+      });
+    } catch(err){ console.error(err); }
+  });
+</script>
+
+</body>
+</html>
